@@ -1,7 +1,10 @@
 package app;
 
 import data_access.FileUserDataAccessObject;
+import data_access.InMemoryUserDataAccessObject;
+import data_access.DBUserDataAccessObject;
 import entity.CommonUserFactory;
+import interface_adapter.logged_in.ChangePasswordController;
 import interface_adapter.login.LoginViewModel;
 import interface_adapter.logged_in.LoggedInViewModel;
 import interface_adapter.signup.SignupViewModel;
@@ -16,7 +19,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 
-public class Main {
+public class MainWithDB {
     public static void main(String[] args) {
         // Build the main program window, the main panel containing the
         // various cards, and the layout, and stitch them together.
@@ -43,12 +46,8 @@ public class Main {
         LoggedInViewModel loggedInViewModel = new LoggedInViewModel();
         SignupViewModel signupViewModel = new SignupViewModel();
 
-        FileUserDataAccessObject userDataAccessObject;
-        try {
-            userDataAccessObject = new FileUserDataAccessObject("./users.csv", new CommonUserFactory());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        DBUserDataAccessObject userDataAccessObject;
+        userDataAccessObject = new DBUserDataAccessObject(new CommonUserFactory());
 
         SignupView signupView = SignupUseCaseFactory.create(viewManagerModel, loginViewModel, signupViewModel, userDataAccessObject);
         views.add(signupView, signupView.viewName);
@@ -56,7 +55,9 @@ public class Main {
         LoginView loginView = LoginUseCaseFactory.create(viewManagerModel, loginViewModel, loggedInViewModel, userDataAccessObject);
         views.add(loginView, loginView.viewName);
 
-        LoggedInView loggedInView = new LoggedInView(loggedInViewModel);
+
+        // Todo: make a loggined view factory to add controller.
+        LoggedInView loggedInView = ChangePasswordUseCaseFactory.create(viewManagerModel, loginViewModel,  loggedInViewModel, userDataAccessObject);
         views.add(loggedInView, loggedInView.viewName);
 
         viewManagerModel.setActiveView(signupView.viewName);
